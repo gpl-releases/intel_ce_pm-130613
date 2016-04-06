@@ -1,0 +1,44 @@
+--- a/kernel/ce2600.c
++++ b/kernel/ce2600.c
+@@ -75,7 +75,12 @@
+ //******************************************************************************
+ #include <linux/string.h>
+ #include <linux/delay.h>
++#ifdef UPSTREAM_GPIO_VER
+ #include <linux/gpio.h>
++#else
++#include "idl.h"
++#include "idl_gpio.h"
++#endif
+ 
+ #include "osal.h"
+ #include "clock_control.h"
+@@ -83,6 +88,10 @@
+ #include "icepm_internal.h"
+ #include "kernel.h"
+ 
++#ifndef UPSTREAM_GPIO_VER
++#define gpio_set_value idl_gpio_set_line
++#endif
++
+ // true iff we are running on an A-step CE2600.
+ static bool is_A_step = false;
+ 
+@@ -895,7 +904,7 @@
+         {
+             if ( wifi_power_gpio != -1)
+             {
+-                gpio_set_value(wifi_power_gpio, 1);
++                gpio_set_value(wifi_power_gpio, 0);
+             }
+         }
+ 
+@@ -968,7 +977,7 @@
+             if (drv == &drv_pcie1 || drv == &drv_pcie2) {
+                 if ( wifi_power_gpio != -1)
+                 {
+-                    gpio_set_value(wifi_power_gpio, 0);
++                    gpio_set_value(wifi_power_gpio, 1);
+                 }
+             }
+ 

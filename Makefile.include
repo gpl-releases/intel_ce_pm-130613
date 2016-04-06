@@ -1,0 +1,166 @@
+#-----------------------------------------------------------------------------
+# This file is provided under a dual BSD/GPLv2 license.  When using or 
+# redistributing this file, you may do so under either license.
+#
+# GPL LICENSE SUMMARY
+#
+# Copyright(c) 2009-2013 Intel Corporation. All rights reserved.
+#
+# This program is free software; you can redistribute it and/or modify 
+# it under the terms of version 2 of the GNU General Public License as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but 
+# WITHOUT ANY WARRANTY; without even the implied warranty of 
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License 
+# along with this program; if not, write to the Free Software 
+# Foundation, Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+# The full GNU General Public License is included in this distribution 
+# in the file called LICENSE.GPL.
+#
+# Contact Information:
+#      Intel Corporation
+#      2200 Mission College Blvd.
+#      Santa Clara, CA  97052
+#
+# BSD LICENSE 
+#
+# Copyright(c) 2009-2013 Intel Corporation. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without 
+# modification, are permitted provided that the following conditions 
+# are met:
+#
+#   - Redistributions of source code must retain the above copyright 
+#     notice, this list of conditions and the following disclaimer.
+#   - Redistributions in binary form must reproduce the above copyright 
+#     notice, this list of conditions and the following disclaimer in 
+#     the documentation and/or other materials provided with the 
+#     distribution.
+#   - Neither the name of Intel Corporation nor the names of its 
+#     contributors may be used to endorse or promote products derived 
+#     from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR 
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#---------------------------------------------------------------------------
+
+#----------------------------------------------------------------------------
+# This file should only be included from within other Makefiles.  It assumes:
+# The environment variable COMP_ROOT has been set to the full path of the root
+# of the component source tree.
+#----------------------------------------------------------------------------
+ifndef COMP_ROOT
+$(error 'Makefile.include ERROR -- COMP_ROOT must be defined')
+endif
+
+#-----------------------------------------------------------------------------
+#  B U I L D   E N V I R O N M E N T
+#
+# Automation system builds should set the following environment variables.
+# We set reasonable defaults below for development builds.
+#
+# BUILD_ROOT: Full path of root directory for the build "sandbox". The
+#             intel_ce_pm driver source tree will be at
+#             $(BUILD_ROOT)/intel_ce_pm.
+# BUILD_DIR:  Name of the directory WITHIN the sandbox containing the
+#             import/export tree;  i.e., where we can find header files and
+#             libraries on which we are dependent, and to which we can
+#             copy our development system exports. Normally 'i686-linux-elf'.
+# BUILD_DEST: Full path of the dev system import/export tree.
+# FSROOT:     Full path of the target system export tree.
+# KERNEL_BUILD_DIR:
+# 			  Full path of configured kernel source directory
+# COMP_VER    Component version string like "1-2-3-4444"
+# COMP_VER1   Integer in 1st position of component version (e.g., 1)
+# COMP_VER2   Integer in 2nd position of component version (e.g., 2)
+# COMP_VER3   Integer in 3rd position of component version (e.g., 3)
+# COMP_VER4   Integer in 4th position of component version (e.g., 4444)
+#-----------------------------------------------------------------------------
+BUILD_ROOT ?= $(abspath $(COMP_ROOT)/..)
+BUILD_DIR  ?= i686-linux-elf
+BUILD_DEST ?= $(BUILD_ROOT)/$(BUILD_DIR)
+FSROOT     ?= $(BUILD_DEST)
+
+KERNEL_BUILD_DIR ?= $(wildcard $(BUILD_DEST)/kernel/linux-?.?.??)
+
+# If not an official build, we use bogus "development" build number
+COMP_VER4 ?= 9999999
+COMP_VER  ?= Unofficial Build $(shell date)
+
+#----------------------------------------------------------------
+#  C O M P O N E N T   I N T E R N A L   D I R E C T O R I E S
+#----------------------------------------------------------------
+DOXINCLUDE = $(COMP_ROOT)/include/doxygen
+
+#----------------------------------------------------------------
+#  T O O L  S
+#----------------------------------------------------------------
+ifndef HOSTCC
+HOSTADDR2LINE = addr2line
+HOSTAR        = ar
+HOSTAS        = as
+HOSTBISON     = bison
+HOSTCC        = gcc
+HOSTCXX       = g++
+HOSTCXXFILT   = c++filt
+HOSTGPROF     = gprof
+HOSTLD        = ld
+HOSTM4        = m4
+HOSTNM        = nm
+HOSTOBJCOPY   = objcopy
+HOSTOBJDUMP   = objdump
+HOSTRANLIB    = ranlib
+HOSTREADELF   = readelf
+HOSTSIZE      = size
+HOSTSTRINGS   = strings
+HOSTSTRIP     = strip
+HOSTYACC      = yacc
+endif
+
+ifndef TARGETCC
+TARGETCC        = $(BUILD_DEST)/bin/i686-cm-linux-gcc
+endif
+
+export CROSS_COMPILE=$(shell echo $(TARGETCC) | sed 's/gcc$$//')
+
+export ADDR2LINE = $(CROSS_COMPILE)addr2line
+export AR        = $(CROSS_COMPILE)ar
+export AS        = $(CROSS_COMPILE)as
+export BISON     = $(CROSS_COMPILE)bison
+export CC        = $(CROSS_COMPILE)gcc
+export CXX       = $(CROSS_COMPILE)g++
+export CXXFILT   = $(CROSS_COMPILE)c++filt
+export GPROF     = $(CROSS_COMPILE)gprof
+export LD        = $(CROSS_COMPILE)ld
+export M4        = $(CROSS_COMPILE)m4
+export NM        = $(CROSS_COMPILE)nm
+export OBJCOPY   = $(CROSS_COMPILE)objcopy
+export OBJDUMP   = $(CROSS_COMPILE)objdump
+export RANLIB    = $(CROSS_COMPILE)ranlib
+export READELF   = $(CROSS_COMPILE)readelf
+export SIZE      = $(CROSS_COMPILE)size
+export STRINGS   = $(CROSS_COMPILE)strings
+export STRIP     = $(CROSS_COMPILE)strip
+export YACC      = $(CROSS_COMPILE)yacc
+
+#----------------------------------------------------------------
+#  C O M P I L E   F L A G S
+#----------------------------------------------------------------
+EXTRA_CFLAGS += -Wall -Werror
+
+# -m32 selects 32-bit architecture even when building on 64-bit development
+# system (I hope)
+EXTRA_CFLAGS += -m32
